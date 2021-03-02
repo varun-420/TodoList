@@ -7,14 +7,15 @@
      <form action="/delete" method="post">
 
          <div class="box">
+          <% if(newValue != null){ %>
        <% newValue.forEach(function(itm){ %>
          <div class="item">
           <input type="checkbox" name="checkBox" value="<%= itm._id %>" onchange="this.form.submit()">
           <p> <%= itm.name %> </p>
            </div>
-      
+       <input type="hidden" name="listName" value="<%= listTitle %>"></input>
      </form>
-    <%  }) %>
+    <%  })} %>
 
     <form class="item" action="/" method="post">
       <input type="text" name="newItem" placeholder="new Item" autocomplete="off">

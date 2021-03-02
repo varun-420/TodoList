@@ -9,6 +9,7 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
+mongoose.set('useFindAndModify', false);
 
 mongoose.connect("mongodb+srv://new_pathak20:varun-420@cluster0.22tlj.mongodb.net/todolistDB",{useNewUrlParser: true});
 const itemsSchema = {
@@ -79,13 +80,25 @@ app.post("/", function(req,res){
 
 app.post("/delete", function(req,res){
   const checkboxId = req.body.checkBox;
+  console.log(checkboxId);
+  const listName = req.body.listName;
 
+  if(listName === "Today"){
     Item.findByIdAndRemove(checkboxId, function(err){
       if(!err){
       console.log("successfully deleted the ckecked item");
       res.redirect("/");
     }
     });
+  }
+    else{
+      List.findOneAndUpdate({name: listName},{$pull: {items: {_id: checkboxId}}},function(err,found){
+        if(!err){
+        console.log("successfully deleted the ckecked item"+ found);
+        res.redirect("/"+ listName);
+      }
+      });
+    }
 
 });
 
@@ -101,7 +114,7 @@ List.findOne({name: listName}, function(err,foundList){
         items: defaultsItems
       });
       list.save();
-      res.redirect("/"+listName);
+      res.redirect("/"+ listName);
     }
     else{
       res.render("list", {listTitle: foundList.name, newValue: foundList.items});
