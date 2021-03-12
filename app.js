@@ -28,7 +28,9 @@ const item3 = new Item({
   name: "<-- hit this to delete an item"
 });
 
+
 const defaultsItems = [item1,item2,item3];
+
 
 const listSchema = {
   name: String,
@@ -38,7 +40,17 @@ const List = mongoose.model("List",listSchema);
 
 
 app.get("/", function(req, res) {
-
+  let list1;
+  List.find({}, function(err,findList){
+    if(!err){
+      list1 = findList;
+    }
+  });
+  function sleep(ms) {
+ return new Promise((resolve) => {
+   setTimeout(resolve,500);
+ });
+}
    Item.find({},function(err,foundItems){
    if(foundItems.length === 0)
    {
@@ -51,7 +63,7 @@ app.get("/", function(req, res) {
      res.redirect("/");
    }
      else{
-    res.render("list", {listTitle: "Today", newValue: foundItems});
+    res.render("list", {listTitle: "Today", newValue: foundItems ,list2: list1});
   }
 });
 
@@ -80,7 +92,6 @@ app.post("/", function(req,res){
 
 app.post("/delete", function(req,res){
   const checkboxId = req.body.checkBox;
-  console.log(checkboxId);
   const listName = req.body.listName;
 
   if(listName === "Today"){
@@ -99,10 +110,36 @@ app.post("/delete", function(req,res){
       }
       });
     }
-
 });
 
+app.post("/deleteList", function(req,res){
+  const listId = req.body.checkbox;
+  List.findByIdAndRemove(listId, function(err){
+    if(!err)
+    {
+      res.redirect("/");
+    }
+  });
+});
+app.get("/about", function(req,res){
+  res.render("about");
+});
+
+app.get("/createList", function(req,res){
+  res.render("createList");
+});
+app.post("/createList", function(req,res){
+  const newListName1 = req.body.newListName1;
+  res.redirect("/"+ newListName1);
+});
 app.get("/:customListName",function(req,res){
+  let list1;
+  List.find({}, function(err,findList){
+    if(!err){
+      list1 = findList;
+    }
+  });
+
   const listName = _.capitalize(req.params.customListName);
 
 List.findOne({name: listName}, function(err,foundList){
@@ -117,19 +154,15 @@ List.findOne({name: listName}, function(err,foundList){
       res.redirect("/"+ listName);
     }
     else{
-      res.render("list", {listTitle: foundList.name, newValue: foundList.items});
+      res.render("list", {listTitle: foundList.name, newValue: foundList.items, list2: list1});
     }
   }
 });
 
 });
-app.get("/work", function(req,res){
-  res.render("list", {listTitle: "work list", newValue: workItems});
-});
 
-app.get("/about", function(req,res){
-  res.render("about");
-});
+
+
 let port = process.env.PORT;
 if (port == null || port == "") {
   port = 3000;
